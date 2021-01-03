@@ -1,0 +1,10 @@
+.DS_Store
+.idea/
+__pycache__/
+
+.env
+logs.log
+screens/
+qsapp/csv_manual_upload.py
+qsapp/playground.py
+venv/
