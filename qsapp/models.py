@@ -102,9 +102,9 @@ class Body(Base):
                 session.commit()
             else:
                 pass
-        print("Inserting in table: Body")
-        print(f"Attempted insert: {len(import_data)}")
-        print(f"Inserted rows: {row_count}")
+        logger.info("Inserting in table: Body")
+        logger.info(f"Attempted insert: {len(import_data)}")
+        logger.info(f"Inserted rows: {row_count}")
 
 
 class Myfitnesspal(Base):
@@ -112,6 +112,7 @@ class Myfitnesspal(Base):
     metadata = metadata
 
     @classmethod
+    # TODO - split to two functions - download data & insert to db
     def myfitnesspal_insert(cls, startdate, enddate):
         mfp_user = os.getenv("MYFITNESSPAL_USER")
         mfp_pass = os.getenv("MYFITNESSPAL_PASS")
@@ -136,9 +137,9 @@ class Myfitnesspal(Base):
             row_count = row_count + q.rowcount
             session.flush()
         session.commit()
-        print(f"Inserting in table: {cls.__tablename__}")
-        print(f"Attempted insert: {len(mfp_results)}")
-        print(f"Inserted rows: {row_count}")
+        logger.info(f"Inserting in table: {cls.__tablename__}")
+        logger.info(f"Attempted insert: {len(mfp_results)}")
+        logger.info(f"Inserted rows: {row_count}")
 
 # Myfitnesspal.myfitnesspal_insert("01-01-2020", "14-12-2020")
 

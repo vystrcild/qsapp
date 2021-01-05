@@ -29,15 +29,14 @@ def index():
     # Check what is the last row in DB and ask Withings API for call
     logger.debug("Start loading - Index page")
     last_in_db = Body.load_df().date.max()
-    print(last_in_db)
     data = withings_daily_summary(str(last_in_db))
     # If Withings API returns data return success status and automaticaly start uploading newest data to DB
+    # TODO - Bad design, insert should be only when data > last_in_db, else pass
     if isinstance(data, list):
         last_in_API = data[-1]['date']
         status = f"Last record in API: {last_in_API}"
         icon = "green"
         Body.body_insert(str(last_in_db))
-        last_in_db = Body.load_df().date.max()
     # If Withing API token is invalid return Error message
     else:
         status = data

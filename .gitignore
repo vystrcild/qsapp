@@ -3,7 +3,7 @@
 __pycache__/
 
 .env
-logs.log
+*.log
 screens/
 qsapp/csv_manual_upload.py
 qsapp/playground.py
