@@ -8,6 +8,9 @@ logger.debug("Module helpers.py loaded")
 
 
 class Dates:
+    """
+    Helpers for dates calculations
+    """
     now = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     this_monday = now - timedelta(days=now.weekday())
     this_sunday = this_monday + timedelta(days=6)
@@ -24,6 +27,11 @@ class Dates:
     last_7_days = now - timedelta(days=6)
 
     def count_previous_period(startdate, enddate):
+        """
+        Count previous period for original period
+        Date picker sometimes sending datetime format and sometimes date format.
+        Also it could happen that startdate is datetime and enddate is date → two if conditions
+        """
         if len(startdate) > 10:
             start = datetime.strptime(startdate, "%Y-%m-%dT%H:%M:%S")
         else:
@@ -32,6 +40,7 @@ class Dates:
             end = datetime.strptime(enddate, "%Y-%m-%dT%H:%M:%S")
         else:
             end = datetime.strptime(enddate, "%Y-%m-%d")
+
         count_days = end - start
         previous_period_end = datetime.strftime(start - timedelta(days=1), "%Y-%m-%d")
         previous_period_start = datetime.strftime(start - timedelta(days=(count_days.days+1)), "%Y-%m-%d")

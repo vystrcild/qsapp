@@ -11,7 +11,7 @@ def init_app():
     app.config.from_object("config.DevConfig")
 
     with app.app_context():
-        # Have to be loaded after init_app (Flask peculiarities)
+        # Have to be loaded with init_app (Flask peculiarities)
         from qsapp import routes
 
         from .plotlydash.dashboard import init_dashboard

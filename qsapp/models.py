@@ -8,8 +8,6 @@ import requests
 import myfitnesspal
 import os
 from dotenv import load_dotenv
-import time
-import ciso8601
 import datetime
 import logging.config
 
@@ -54,14 +52,6 @@ Base = declarative_base(cls=Base)
 def withings_daily_summary(startdate):
     headers = {'Authorization': 'Bearer ' + os.environ['TOKEN_WITHINGS']}
 
-    def date_to_unix(date):
-        ts = ciso8601.parse_datetime(date)
-        return time.mktime(ts.timetuple())
-
-    def unix_to_date(unix):
-        unix = int(float(unix))
-        return datetime.datetime.utcfromtimestamp(unix).strftime('%Y-%m-%d')
-
     meastypes = {"1": "weight", "5": "fat_free_mass", "6": "fat_ratio", "8": "fat_mass_weight",
                  "76": "muscle_mass", "77": "hydration", "88": "bone_mass", "71": "body_temperature",
                  "9": "distolic", "10": "systolic", "11": "heart_pulse", "12": "temperature",
@@ -69,28 +59,27 @@ def withings_daily_summary(startdate):
                  }
     payload = {'action': 'getmeas',
                "category": "1",
-               "startdate": date_to_unix(startdate)
+               # From date to unix format
+               "startdate": datetime.datetime.strptime(startdate, "%Y-%m-%d %H:%M:%S").timestamp()
                }
     r_getmeas = requests.get('https://wbsapi.withings.net/measure', headers=headers, params=payload).json()
 
-    try:
+    if "error" in r_getmeas:
         status = str("Withings API error: " + r_getmeas["error"])
         return status
-    except:
+    else:
         measures = r_getmeas["body"]["measuregrps"]
         results = []
-        for date in measures:
+        for record in measures:
             day = {}
-            result_date = date["date"]
-            result_date = unix_to_date(result_date)
+            result_date = record["date"]
+            # From unix to date format
+            result_date = datetime.datetime.fromtimestamp(int(result_date)).strftime("%Y-%m-%d")
             day["date"] = result_date
 
-            for result in date["measures"]:
-                result_value = result["value"]
-                result_type = result["type"]
-                result_type = meastypes[str(result_type)]
-                result_unit = result["unit"]
-                real_value = result_value * (10 ** result_unit)
+            for result in record["measures"]:
+                result_type = meastypes[str(result["type"])]
+                real_value = result["value"] * (10 ** result["unit"])
                 day[result_type] = round(real_value, 4)
 
             results.append(day)
