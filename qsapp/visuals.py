@@ -6,7 +6,7 @@ import logging.config
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 
-from qsapp.models import Body, Total_Energy
+from qsapp.models import Body
 from qsapp.helpers import Dates
 
 logging.config.fileConfig('logging.ini', disable_existing_loggers=False)
@@ -14,17 +14,8 @@ logger = logging.getLogger("debugLogger")
 
 logger.debug("Module visuals loaded")
 
-def body_load():
-    df_body = Body.load_df()
-    return df_body
-
-def energy_load():
-    df_energy = Total_Energy.load_df()
-    return df_energy
-
-
 def render_body(startdate, enddate, aggregation):
-    df = body_load()
+    df = Body.load_df()
     mask = (df.date >= startdate) & (df.date <= enddate)
     df = df.loc[mask]
     df.index = df.date
@@ -137,11 +128,11 @@ class CardBody(Card):
     def __init__(self, metric, trend, datasource):
         Card.__init__(self, metric, trend, datasource, self.unit, self.format)
 
-logger.debug("ENERGY Started loading")
+
 class CardEnergy(Card):
     unit = "kcal"
     format = "{:.0f}"
 
     def __init__(self, metric, trend, datasource):
         Card.__init__(self, metric, trend, datasource, self.unit, self.format)
-logger.debug("ENERGY Stopped loading")
+

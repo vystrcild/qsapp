@@ -1,4 +1,5 @@
 from flask import current_app as app
+from flask_caching import Cache
 import sqlalchemy as db
 from sqlalchemy import Column
 from sqlalchemy.orm import sessionmaker
@@ -12,6 +13,7 @@ import datetime
 import logging.config
 
 load_dotenv()
+cache = Cache(app)
 
 logging.config.fileConfig('logging.ini', disable_existing_loggers=False)
 logger = logging.getLogger("debugLogger")
@@ -38,6 +40,7 @@ class Base(object):
     __table_args__ = {'autoload': True}
 
     @classmethod
+    @cache.memoize(60)
     def load_df(cls):
         logger.debug(f"Table name: {cls.__tablename__} - Started reading")
         df = pd.read_sql_table(cls.__tablename__, con=engine)

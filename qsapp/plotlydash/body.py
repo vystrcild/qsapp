@@ -3,7 +3,7 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 from datetime import date
 
-from qsapp.visuals import render_body, CardBody, CardEnergy
+from qsapp.visuals import render_body
 from qsapp.helpers import Dates
 
 import logging.config

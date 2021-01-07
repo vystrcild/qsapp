@@ -2,6 +2,8 @@
 .idea/
 __pycache__/
 
+cache/
+
 .env
 *.log
 screens/

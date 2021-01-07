@@ -2,7 +2,6 @@ import dash
 from dash import Dash
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_bootstrap_components as dbc
 from datetime import date
 
 from qsapp.visuals import render_body, CardBody, CardEnergy
