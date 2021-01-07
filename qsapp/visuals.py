@@ -14,12 +14,17 @@ logger = logging.getLogger("debugLogger")
 
 logger.debug("Module visuals loaded")
 
-df_body = Body.load_df()
-df_energy = Total_Energy.load_df()
+def body_load():
+    df_body = Body.load_df()
+    return df_body
+
+def energy_load():
+    df_energy = Total_Energy.load_df()
+    return df_energy
 
 
 def render_body(startdate, enddate, aggregation):
-    df = df_body
+    df = body_load()
     mask = (df.date >= startdate) & (df.date <= enddate)
     df = df.loc[mask]
     df.index = df.date
@@ -126,18 +131,19 @@ class Card(object):
 
 
 class CardBody(Card):
-    datasource = df_body
+    datasource = body_load()
     unit = "kg"
     format = "{:.2f}"
 
     def __init__(self, metric, trend):
         Card.__init__(self, metric, trend, self.datasource, self.unit, self.format)
 
-
+logger.debug("ENERGY Started loading")
 class CardEnergy(Card):
-    datasource = df_energy
+    datasource = energy_load()
     unit = "kcal"
     format = "{:.0f}"
 
     def __init__(self, metric, trend):
         Card.__init__(self, metric, trend, self.datasource, self.unit, self.format)
+logger.debug("ENERGY Stopped loading")

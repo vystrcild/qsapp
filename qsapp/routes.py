@@ -50,6 +50,12 @@ def body():
     return render_template("body.html")
 
 
+@app.route("/test")
+def test():
+    logger.debug("Start loading - Test page")
+    return render_template("test.html")
+
+
 @app.route('/oura_login')
 def oura_login():
     """Redirect to the OAuth provider login page.
