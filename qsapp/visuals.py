@@ -131,19 +131,17 @@ class Card(object):
 
 
 class CardBody(Card):
-    datasource = body_load()
     unit = "kg"
     format = "{:.2f}"
 
-    def __init__(self, metric, trend):
-        Card.__init__(self, metric, trend, self.datasource, self.unit, self.format)
+    def __init__(self, metric, trend, datasource):
+        Card.__init__(self, metric, trend, datasource, self.unit, self.format)
 
 logger.debug("ENERGY Started loading")
 class CardEnergy(Card):
-    datasource = energy_load()
     unit = "kcal"
     format = "{:.0f}"
 
-    def __init__(self, metric, trend):
-        Card.__init__(self, metric, trend, self.datasource, self.unit, self.format)
+    def __init__(self, metric, trend, datasource):
+        Card.__init__(self, metric, trend, datasource, self.unit, self.format)
 logger.debug("ENERGY Stopped loading")

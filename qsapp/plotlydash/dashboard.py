@@ -6,6 +6,7 @@ import dash_bootstrap_components as dbc
 from datetime import date
 
 from qsapp.visuals import render_body, CardBody, CardEnergy
+from qsapp.models import Total_Energy, Body
 from qsapp.helpers import Dates
 from .layout import html_layout
 from .body import body_layout
@@ -88,22 +89,25 @@ def init_callbacks(dash_app):
                        [dash.dependencies.Input('my-date-picker-range', 'start_date'),
                         dash.dependencies.Input('my-date-picker-range', 'end_date')])
     def update_body_cards(start_date, end_date):
-        return [CardBody("weight", "non").get_values(start_date, end_date),
-                CardBody("muscle_mass", "positive").get_values(start_date, end_date),
-                CardBody("fat_mass_weight", "negative").get_values(start_date, end_date)]
+        return [CardBody("weight", "non", df_body).get_values(start_date, end_date),
+                CardBody("muscle_mass", "positive", df_body).get_values(start_date, end_date),
+                CardBody("fat_mass_weight", "negative", df_body).get_values(start_date, end_date)]
 
     @dash_app.callback(dash.dependencies.Output('energy-cards', 'children'),
                        [dash.dependencies.Input('my-date-picker-range', 'start_date'),
                         dash.dependencies.Input('my-date-picker-range', 'end_date')], prevent_initial_call=True)
     def update_energy_cards(start_date, end_date):
-        return [CardEnergy("energy_output", "positive").get_values(start_date, end_date),
-                CardEnergy("energy_income", "negative").get_values(start_date, end_date),
-                CardEnergy("energy_total", "positive").get_values(start_date, end_date)]
+        return [CardEnergy("energy_output", "positive", df_energy).get_values(start_date, end_date),
+                CardEnergy("energy_income", "negative", df_energy).get_values(start_date, end_date),
+                CardEnergy("energy_total", "positive", df_energy).get_values(start_date, end_date)]
 
     @dash_app.callback(dash.dependencies.Output('page-content', 'children'),
                   [dash.dependencies.Input('url', 'pathname')])
     def display_page(pathname):
         if pathname == '/dashapp/body':
+            global df_body, df_energy
+            df_body = Body.load_df()
+            df_energy = Total_Energy.load_df()
             return body_layout
         elif pathname == '/dashapp/test':
             return test_layout
