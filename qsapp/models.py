@@ -3,6 +3,7 @@ from flask_caching import Cache
 import sqlalchemy as db
 from sqlalchemy import Column
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 import pandas as pd
 import requests
@@ -40,13 +41,19 @@ class Base(object):
     __table_args__ = {'autoload': True}
 
     @classmethod
-    @cache.memoize(60)
+    @cache.memoize(3600)
     def load_df(cls):
         logger.debug(f"Table name: {cls.__tablename__} - Started reading")
         df = pd.read_sql_table(cls.__tablename__, con=engine)
         logger.debug(f"Table name: {cls.__tablename__} - Finished reading")
         return df
 
+    @classmethod
+    def get_last_date(cls):
+        logger.debug(f"Table name: {cls.__tablename__} - Started reading 'get_last_date'")
+        q = session.query(func.max(cls.date)).scalar()
+        logger.debug(f"Table name: {cls.__tablename__} - Finished reading 'get_last_date'")
+        return q
 
 Base = declarative_base(cls=Base)
 
