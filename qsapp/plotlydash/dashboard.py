@@ -8,8 +8,9 @@ from qsapp.visuals import render_body,render_energy_barchart , CardBody, CardEne
 from qsapp.models import Total_Energy, Body
 from qsapp.helpers import Dates
 from .layout import html_layout
-from .body import body_layout
-from .test import test_layout
+from .fitness import body_layout
+from .heart import heart_layout
+from .sleep import sleep_layout
 
 import logging.config
 logging.config.fileConfig('logging.ini', disable_existing_loggers=False)
@@ -106,12 +107,14 @@ def init_callbacks(dash_app):
     @dash_app.callback(dash.dependencies.Output('page-content', 'children'),
                   [dash.dependencies.Input('url', 'pathname')])
     def display_page(pathname):
-        if pathname == '/dashapp/body':
+        if pathname == '/dashapp/fitness':
             global df_body, df_energy
             df_body = Body.load_df()
             df_energy = Total_Energy.load_df()
             return body_layout
-        elif pathname == '/dashapp/test':
-            return test_layout
+        elif pathname == '/dashapp/heart':
+            return heart_layout
+        elif pathname == '/dashapp/sleep':
+            return sleep_layout
         else:
             pass

@@ -10,7 +10,7 @@ import logging.config
 logging.config.fileConfig('logging.ini', disable_existing_loggers=False)
 logger = logging.getLogger("debugLogger")
 
-logger.debug("Module body.py loaded")
+logger.debug("Module fitness.py loaded")
 
 body_layout = dbc.Container(
                 [

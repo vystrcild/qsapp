@@ -50,16 +50,20 @@ def index():
     return render_template("index.html", status=status, icon=icon, last_in_db=last_in_db)
 
 
-@app.route("/body")
-def body():
-    logger.debug("Start loading - Body page")
-    return render_template("body.html")
+@app.route("/fitness")
+def fitness():
+    logger.debug("Start loading - Fitness page")
+    return render_template("fitness.html")
 
+@app.route("/heart")
+def heart():
+    logger.debug("Start loading - Heart page")
+    return render_template("heart.html")
 
-@app.route("/test")
-def test():
-    logger.debug("Start loading - Test page")
-    return render_template("test.html")
+@app.route("/sleep")
+def sleep():
+    logger.debug("Start loading - Sleep page")
+    return render_template("sleep.html")
 
 
 @app.route('/oura_login')
