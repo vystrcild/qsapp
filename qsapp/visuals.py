@@ -24,7 +24,13 @@ def render_body(startdate, enddate, aggregation):
     y2 = df.muscle_mass
     y3 = df.fat_mass_weight
 
-    fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.01)
+    df2 = Total_Energy.load_df()
+    mask = (df2.date >= startdate) & (df2.date <= enddate)
+    df2 = df2.loc[mask]
+    df2.index = df2.date
+    df2 = df2.groupby(pd.Grouper(freq=aggregation)).mean()
+
+    fig = make_subplots(rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.01)
     fig.append_trace(go.Scatter(x=df.index, y=y1,
                                 mode='lines+markers',
                                 line={"shape": "spline", "color": "#6610f2"},
@@ -49,46 +55,24 @@ def render_body(startdate, enddate, aggregation):
                                 connectgaps=True
                                 ), row=3, col=1)
 
+    fig.append_trace(go.Bar(x=df2.index, y=df2.active_energy
+                            ), row=4, col=1)
+
     fig.update_layout(showlegend=False,
                       margin={"t": 10, "l": 0, "r": 0, "b": 40},
                       plot_bgcolor="white",
                       hovermode="x unified",
-                      height=500
+                      height=700
                       )
 
-    fig.update_traces(xaxis='x3', row=1, col=1)
-    fig.update_traces(xaxis='x3', row=2, col=1)
-    fig.update_traces(xaxis='x3', row=3, col=1)
+    fig.update_traces(xaxis='x4', row=1, col=1)
+    fig.update_traces(xaxis='x4', row=2, col=1)
+    fig.update_traces(xaxis='x4', row=3, col=1)
+    fig.update_traces(xaxis='x4', row=4, col=1)
 
     fig.update_yaxes(range=[y1.min() - 0.1, y1.max() + 1], row=1, col=1)
     fig.update_yaxes(range=[y2.min() - 0.1, y2.max() + 0.1], row=2, col=1)
     fig.update_yaxes(range=[y3.min() - 1, y3.max() + 0.1], row=3, col=1)
-
-    if aggregation == "D" or aggregation == "W":
-        fig.update_xaxes(tickformat="%d-%m-%y")
-    elif aggregation == "M":
-        fig.update_xaxes(tickformat="%m-%Y")
-    elif aggregation == "Y":
-        fig.update_xaxes(tickformat="%Y", ticklabelmode="period")
-
-    return fig
-
-
-def render_energy_barchart(startdate, enddate, aggregation):
-    df = Total_Energy.load_df()
-    mask = (df.date >= startdate) & (df.date <= enddate)
-    df = df.loc[mask]
-    df.index = df.date
-    df = df.groupby(pd.Grouper(freq=aggregation)).mean()
-
-    fig = go.Figure([go.Bar(x=df.index, y=df.active_energy)])
-
-    fig.update_layout(showlegend=False,
-                      margin={"t": 10, "l": 0, "r": 0, "b": 40},
-                      plot_bgcolor="white",
-                      hovermode="x unified",
-                      height=300
-                      )
 
     if aggregation == "D" or aggregation == "W":
         fig.update_xaxes(tickformat="%d-%m-%y")

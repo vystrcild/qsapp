@@ -3,7 +3,7 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 from datetime import date
 
-from qsapp.visuals import render_body, render_energy_barchart
+from qsapp.visuals import render_body
 from qsapp.helpers import Dates
 
 import logging.config
@@ -95,13 +95,7 @@ body_layout = dbc.Container(
                     ),
                     dbc.Row(
                         dbc.Col(
-                            html.Div(
-                                (dcc.Graph(
-                                    id="energy-graph",
-                                    figure=render_energy_barchart("2020-12-01", "2020-12-31", "M"),
-                                    config={"displayModeBar": False, "showTips": False}
-                                ))
-                            ), width=12, className="card shadow-sm"
+
                         ), className="pt-3"
                     )
                 ]
