@@ -4,7 +4,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from datetime import date
 
-from qsapp.visuals import render_body, CardBody, CardEnergy
+from qsapp.visuals import render_body,render_energy_barchart , CardBody, CardEnergy
 from qsapp.models import Total_Energy, Body
 from qsapp.helpers import Dates
 from .layout import html_layout
@@ -41,12 +41,15 @@ def init_dashboard(server):
     return dash_app.server
 
 def init_callbacks(dash_app):
-    @dash_app.callback(dash.dependencies.Output('body-graph', 'figure'),
+    @dash_app.callback([
+    dash.dependencies.Output('body-graph', 'figure'),
+    dash.dependencies.Output('energy-graph', 'figure')],
     [dash.dependencies.Input('my-date-picker-range', 'start_date'),
      dash.dependencies.Input('my-date-picker-range', 'end_date'),
      dash.dependencies.Input('aggregation-picker', 'value')])
     def update_output(start_date, end_date, aggregation):
-        return render_body(start_date,end_date, aggregation)
+        return render_body(start_date,end_date, aggregation), \
+               render_energy_barchart(start_date,end_date, aggregation)
 
     @dash_app.callback([dash.dependencies.Output('my-date-picker-range', 'start_date'),
      dash.dependencies.Output('my-date-picker-range', 'end_date')],

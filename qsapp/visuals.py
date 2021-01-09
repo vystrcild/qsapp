@@ -6,7 +6,7 @@ import logging.config
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 
-from qsapp.models import Body
+from qsapp.models import Body, Total_Energy
 from qsapp.helpers import Dates
 
 logging.config.fileConfig('logging.ini', disable_existing_loggers=False)
@@ -53,7 +53,7 @@ def render_body(startdate, enddate, aggregation):
                       margin={"t": 10, "l": 0, "r": 0, "b": 40},
                       plot_bgcolor="white",
                       hovermode="x unified",
-                      height=600
+                      height=500
                       )
 
     fig.update_traces(xaxis='x3', row=1, col=1)
@@ -63,6 +63,32 @@ def render_body(startdate, enddate, aggregation):
     fig.update_yaxes(range=[y1.min() - 0.1, y1.max() + 1], row=1, col=1)
     fig.update_yaxes(range=[y2.min() - 0.1, y2.max() + 0.1], row=2, col=1)
     fig.update_yaxes(range=[y3.min() - 1, y3.max() + 0.1], row=3, col=1)
+
+    if aggregation == "D" or aggregation == "W":
+        fig.update_xaxes(tickformat="%d-%m-%y")
+    elif aggregation == "M":
+        fig.update_xaxes(tickformat="%m-%Y")
+    elif aggregation == "Y":
+        fig.update_xaxes(tickformat="%Y", ticklabelmode="period")
+
+    return fig
+
+
+def render_energy_barchart(startdate, enddate, aggregation):
+    df = Total_Energy.load_df()
+    mask = (df.date >= startdate) & (df.date <= enddate)
+    df = df.loc[mask]
+    df.index = df.date
+    df = df.groupby(pd.Grouper(freq=aggregation)).mean()
+
+    fig = go.Figure([go.Bar(x=df.index, y=df.active_energy)])
+
+    fig.update_layout(showlegend=False,
+                      margin={"t": 10, "l": 0, "r": 0, "b": 40},
+                      plot_bgcolor="white",
+                      hovermode="x unified",
+                      height=300
+                      )
 
     if aggregation == "D" or aggregation == "W":
         fig.update_xaxes(tickformat="%d-%m-%y")
@@ -114,7 +140,7 @@ class Card(object):
             html.Div([
                 html.H5(children=self.metric_name),
                 html.Div([
-                    html.H2(f"{self.format}".format(original_value) + f" {self.unit}", className="cardnumber"),
+                    html.H3(f"{self.format}".format(original_value) + f" {self.unit}", className="cardnumber"),
                     html.P(f"{change} {self.unit}", className=cardchange)]),
             ], className="card-body pb-1"), className="card shadow-sm", style={"width": "16rem"}
             )
