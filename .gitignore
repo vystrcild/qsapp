@@ -10,3 +10,11 @@ screens/
 qsapp/csv_manual_upload.py
 qsapp/playground.py
 venv/
+
+qsapp/static/css/bootstrap.css
+qsapp/static/css/bootstrap-grid.css
+qsapp/static/css/bootstrap-reboot.css
+qsapp/static/css/bootswatch.css
+
+qsapp/static/js/bootstrap.js
+qsapp/static/js/bootstrap.bundle.js
