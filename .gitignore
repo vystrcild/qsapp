@@ -12,4 +12,5 @@ qsapp/playground.py
 venv/
 
 qsapp/static/css/
+!qsapp/static/css/custom.css
 qsapp/static/js/
