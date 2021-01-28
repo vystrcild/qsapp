@@ -18,6 +18,11 @@ class DevConfig(Config):
     DATABASE_URI = environ.get('DEV_DATABASE_URI')
     environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
+    # Flask-Cache
+    CACHE_TYPE = "filesystem"
+    CACHE_DEFAULT_TIMEOUT = 300
+    CACHE_DIR = "cache"
+
     # DB connection
     MYSQL_URL = environ.get('MYSQL_URL')
     MYSQL_LOGIN = environ.get('MYSQL_LOGIN')

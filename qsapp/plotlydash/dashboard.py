@@ -2,12 +2,15 @@ import dash
 from dash import Dash
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_bootstrap_components as dbc
 from datetime import date
 
 from qsapp.visuals import render_body, CardBody, CardEnergy
+from qsapp.models import Total_Energy, Body
 from qsapp.helpers import Dates
 from .layout import html_layout
+from .fitness import body_layout
+from .heart import heart_layout
+from .sleep import sleep_layout
 
 import logging.config
 logging.config.fileConfig('logging.ini', disable_existing_loggers=False)
@@ -20,6 +23,7 @@ def init_dashboard(server):
     dash_app: Dash = dash.Dash(
         server=server,
         routes_pathname_prefix='/dashapp/',
+        suppress_callback_exceptions=True,
         external_stylesheets=[
             '/static/css/bootswatch.css', '/static/css/custom.css'
         ]
@@ -28,102 +32,18 @@ def init_dashboard(server):
     # Custom HTML layout
     dash_app.index_string = html_layout
 
-
-    # Create Dash Layout
-    dash_app.layout = dbc.Container(
-                    [
-                        dbc.Row([
-                            dbc.Col(html.H1(children="Body & Activity", className="h2 pt-3 pb-3"), className="pl-0"),
-                            dbc.Col([html.Small("Last: "),
-                                     # TODO - dát to radši do rohu každé kartičky nebo jinam
-                                     # html.Small(f"{(datetime.date(last_row_body.date.item())).strftime('%d-%m-%Y')}")],
-                                     html.Small("XX-XX-XXXX")],
-                                    className="pt-3",width={"order": 12})
-                        ]),
-                        dbc.Row([
-                            dbc.Row(
-                                children="", id="body-cards"),
-
-                            dbc.Col(
-                                html.Div([
-                                html.Div(
-                                    dcc.DatePickerRange(
-                                        id='my-date-picker-range',
-                                        month_format="MMMM YYYY",
-                                        min_date_allowed=date(2006, 1, 1),
-                                        display_format="DD/MM/YYYY",
-                                        initial_visible_month=Dates.this_month_first,
-                                        start_date=Dates.this_month_first,
-                                        end_date=Dates.this_month_last,
-                                        first_day_of_week=1,
-                                    ), className="float-right"
-                                ),
-                                html.Div(
-                                        dcc.Dropdown(
-                                                options= [
-                                                    {"label": "Lifetime", "value": "lifetime"},
-                                                    {"label": "This Month", "value": "thismonth"},
-                                                    {"label": "Last Month", "value": "lastmonth"},
-                                                    {"label": "This Week", "value": "thisweek"},
-                                                    {"label": "Last Week", "value": "lastweek"},
-                                                    {"label": "Last 90 Days", "value": "last90"},
-                                                    {"label": "Last 30 Days", "value": "last30"},
-                                                    {"label": "Last 7 Days", "value": "last7"},
-                                                    {"label": "Today", "value": "today"}
-                                                ],
-                                                id="time-period-picker",
-                                                value="last30"
-                                            ) , style={"width": "286px"}, className="float-right"
-
-                                ),
-                                html.Div(
-                                    dcc.Dropdown(
-                                        options=[
-                                            {"label": "Daily", "value": "D"},
-                                            {"label": "Weekly", "value": "W"},
-                                            {"label": "Monthly", "value": "M"},
-                                            {"label": "Yearly", "value": "Y"},
-                                        ],
-                                        id="aggregation-picker",
-                                        value="D"
-                                    ), style={"width": "286px"}, className="float-right"
-
-                                )
-                                ]), className="pr-0"
-                            )
-                        ], className="align-items-start"),
-
-                        dbc.Row([
-                            dbc.Row(
-                            children="", id="energy-cards", className="justify-content-start pt-3"),
-                            dbc.Col()
-                        ]),
-
-                        dbc.Row(
-                            dbc.Col(
-                                html.Div(
-                                         [dcc.Graph(
-                                            id='body-graph',
-                                            figure=render_body("2020-12-01", "2020-12-31", "M"),
-                                            config={"displayModeBar": False, "showTips": False}
-                                         )
-                                         ],
-                                ), width=12, className="card shadow-sm"
-                            ), className="pt-3"
-                        ),
-                        dbc.Row(
-                            dbc.Col(
-                            ), className="pt-3"
-                        )
-                    ]
-    )
+    dash_app.layout = html.Div([
+        dcc.Location(id='url', refresh=False),
+        html.Div(id='page-content')
+    ])
 
     init_callbacks(dash_app)
 
     return dash_app.server
 
 def init_callbacks(dash_app):
-    @dash_app.callback(dash.dependencies.Output('body-graph', 'figure'),
+    @dash_app.callback(
+    dash.dependencies.Output('body-graph', 'figure'),
     [dash.dependencies.Input('my-date-picker-range', 'start_date'),
      dash.dependencies.Input('my-date-picker-range', 'end_date'),
      dash.dependencies.Input('aggregation-picker', 'value')])
@@ -170,14 +90,29 @@ def init_callbacks(dash_app):
                        [dash.dependencies.Input('my-date-picker-range', 'start_date'),
                         dash.dependencies.Input('my-date-picker-range', 'end_date')])
     def update_body_cards(start_date, end_date):
-        return [CardBody("weight", "non").get_values(start_date, end_date),
-                CardBody("muscle_mass", "positive").get_values(start_date, end_date),
-                CardBody("fat_mass_weight", "negative").get_values(start_date, end_date)]
+        return [CardBody("weight", "non", df_body).get_values(start_date, end_date),
+                CardBody("muscle_mass", "positive", df_body).get_values(start_date, end_date),
+                CardBody("fat_mass_weight", "negative", df_body).get_values(start_date, end_date)]
 
     @dash_app.callback(dash.dependencies.Output('energy-cards', 'children'),
                        [dash.dependencies.Input('my-date-picker-range', 'start_date'),
-                        dash.dependencies.Input('my-date-picker-range', 'end_date')])
+                        dash.dependencies.Input('my-date-picker-range', 'end_date')], prevent_initial_call=True)
     def update_energy_cards(start_date, end_date):
-        return [CardEnergy("energy_output", "positive").get_values(start_date, end_date),
-                CardEnergy("energy_income", "negative").get_values(start_date, end_date),
-                CardEnergy("energy_total", "positive").get_values(start_date, end_date)]
+        return [CardEnergy("energy_output", "positive", df_energy).get_values(start_date, end_date),
+                CardEnergy("energy_income", "negative", df_energy).get_values(start_date, end_date),
+                CardEnergy("energy_total", "positive", df_energy).get_values(start_date, end_date)]
+
+    @dash_app.callback(dash.dependencies.Output('page-content', 'children'),
+                  [dash.dependencies.Input('url', 'pathname')])
+    def display_page(pathname):
+        if pathname == '/dashapp/fitness':
+            global df_body, df_energy
+            df_body = Body.load_df()
+            df_energy = Total_Energy.load_df()
+            return body_layout
+        elif pathname == '/dashapp/heart':
+            return heart_layout
+        elif pathname == '/dashapp/sleep':
+            return sleep_layout
+        else:
+            pass
