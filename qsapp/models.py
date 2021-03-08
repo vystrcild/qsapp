@@ -1,7 +1,9 @@
 from flask import current_app as app
+from flask_caching import Cache
 import sqlalchemy as db
 from sqlalchemy import Column
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 import pandas as pd
 import requests
@@ -12,6 +14,7 @@ import datetime
 import logging.config
 
 load_dotenv()
+cache = Cache(app)
 
 logging.config.fileConfig('logging.ini', disable_existing_loggers=False)
 logger = logging.getLogger("debugLogger")
@@ -38,12 +41,19 @@ class Base(object):
     __table_args__ = {'autoload': True}
 
     @classmethod
+    @cache.memoize(3600)
     def load_df(cls):
         logger.debug(f"Table name: {cls.__tablename__} - Started reading")
         df = pd.read_sql_table(cls.__tablename__, con=engine)
         logger.debug(f"Table name: {cls.__tablename__} - Finished reading")
         return df
 
+    @classmethod
+    def get_last_date(cls):
+        logger.debug(f"Table name: {cls.__tablename__} - Started reading 'get_last_date'")
+        q = session.query(func.max(cls.date)).scalar()
+        logger.debug(f"Table name: {cls.__tablename__} - Finished reading 'get_last_date'")
+        return q
 
 Base = declarative_base(cls=Base)
 
@@ -102,9 +112,9 @@ class Body(Base):
                 session.commit()
             else:
                 pass
-        print("Inserting in table: Body")
-        print(f"Attempted insert: {len(import_data)}")
-        print(f"Inserted rows: {row_count}")
+        logger.info("Inserting in table: Body")
+        logger.info(f"Attempted insert: {len(import_data)}")
+        logger.info(f"Inserted rows: {row_count}")
 
 
 class Myfitnesspal(Base):
@@ -112,6 +122,7 @@ class Myfitnesspal(Base):
     metadata = metadata
 
     @classmethod
+    # TODO - split to two functions - download data & insert to db
     def myfitnesspal_insert(cls, startdate, enddate):
         mfp_user = os.getenv("MYFITNESSPAL_USER")
         mfp_pass = os.getenv("MYFITNESSPAL_PASS")
@@ -136,9 +147,9 @@ class Myfitnesspal(Base):
             row_count = row_count + q.rowcount
             session.flush()
         session.commit()
-        print(f"Inserting in table: {cls.__tablename__}")
-        print(f"Attempted insert: {len(mfp_results)}")
-        print(f"Inserted rows: {row_count}")
+        logger.info(f"Inserting in table: {cls.__tablename__}")
+        logger.info(f"Attempted insert: {len(mfp_results)}")
+        logger.info(f"Inserted rows: {row_count}")
 
 # Myfitnesspal.myfitnesspal_insert("01-01-2020", "14-12-2020")
 

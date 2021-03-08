@@ -14,12 +14,8 @@ logger = logging.getLogger("debugLogger")
 
 logger.debug("Module visuals loaded")
 
-df_body = Body.load_df()
-df_energy = Total_Energy.load_df()
-
-
 def render_body(startdate, enddate, aggregation):
-    df = df_body
+    df = Body.load_df()
     mask = (df.date >= startdate) & (df.date <= enddate)
     df = df.loc[mask]
     df.index = df.date
@@ -28,7 +24,13 @@ def render_body(startdate, enddate, aggregation):
     y2 = df.muscle_mass
     y3 = df.fat_mass_weight
 
-    fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.01)
+    df2 = Total_Energy.load_df()
+    mask = (df2.date >= startdate) & (df2.date <= enddate)
+    df2 = df2.loc[mask]
+    df2.index = df2.date
+    df2 = df2.groupby(pd.Grouper(freq=aggregation)).mean()
+
+    fig = make_subplots(rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.01)
     fig.append_trace(go.Scatter(x=df.index, y=y1,
                                 mode='lines+markers',
                                 line={"shape": "spline", "color": "#6610f2"},
@@ -53,16 +55,20 @@ def render_body(startdate, enddate, aggregation):
                                 connectgaps=True
                                 ), row=3, col=1)
 
+    fig.append_trace(go.Bar(x=df2.index, y=df2.active_energy
+                            ), row=4, col=1)
+
     fig.update_layout(showlegend=False,
                       margin={"t": 10, "l": 0, "r": 0, "b": 40},
                       plot_bgcolor="white",
                       hovermode="x unified",
-                      height=600
+                      height=700
                       )
 
-    fig.update_traces(xaxis='x3', row=1, col=1)
-    fig.update_traces(xaxis='x3', row=2, col=1)
-    fig.update_traces(xaxis='x3', row=3, col=1)
+    fig.update_traces(xaxis='x4', row=1, col=1)
+    fig.update_traces(xaxis='x4', row=2, col=1)
+    fig.update_traces(xaxis='x4', row=3, col=1)
+    fig.update_traces(xaxis='x4', row=4, col=1)
 
     fig.update_yaxes(range=[y1.min() - 0.1, y1.max() + 1], row=1, col=1)
     fig.update_yaxes(range=[y2.min() - 0.1, y2.max() + 0.1], row=2, col=1)
@@ -118,7 +124,7 @@ class Card(object):
             html.Div([
                 html.H5(children=self.metric_name),
                 html.Div([
-                    html.H2(f"{self.format}".format(original_value) + f" {self.unit}", className="cardnumber"),
+                    html.H3(f"{self.format}".format(original_value) + f" {self.unit}", className="cardnumber"),
                     html.P(f"{change} {self.unit}", className=cardchange)]),
             ], className="card-body pb-1"), className="card shadow-sm", style={"width": "16rem"}
             )
@@ -126,18 +132,17 @@ class Card(object):
 
 
 class CardBody(Card):
-    datasource = df_body
     unit = "kg"
     format = "{:.2f}"
 
-    def __init__(self, metric, trend):
-        Card.__init__(self, metric, trend, self.datasource, self.unit, self.format)
+    def __init__(self, metric, trend, datasource):
+        Card.__init__(self, metric, trend, datasource, self.unit, self.format)
 
 
 class CardEnergy(Card):
-    datasource = df_energy
     unit = "kcal"
     format = "{:.0f}"
 
-    def __init__(self, metric, trend):
-        Card.__init__(self, metric, trend, self.datasource, self.unit, self.format)
+    def __init__(self, metric, trend, datasource):
+        Card.__init__(self, metric, trend, datasource, self.unit, self.format)
+

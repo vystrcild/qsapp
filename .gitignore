@@ -3,9 +3,15 @@
 __pycache__/
 cache/
 
+cache/
+
 .env
-logs.log
+*.log
 screens/
 qsapp/csv_manual_upload.py
 qsapp/playground.py
 venv/
+
+qsapp/static/css/*
+!qsapp/static/css/custom.css
+qsapp/static/js/

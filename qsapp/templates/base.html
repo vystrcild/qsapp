@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>{% block title %} {% endblock %}</title>
+    <title>QS App</title>
 
     <link href="{{url_for('static', filename = 'css/bootswatch.css')}}" rel="stylesheet">
     <link href="{{url_for('static', filename = 'css/custom.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename = 'favicon.ico')}}" rel="shortcut icon">
 </head>
 <body>
 
@@ -21,11 +22,15 @@
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
-        <a class="nav-link" href="/">Home</a>
+      <li class="nav-item {{ 'active' if active_page == 'fitness' else '' }}">
+        <a class="nav-link" href="/fitness">Fitness</a>
       </li>
-      <li class="nav-item active">
-        <a class="nav-link" href="/body">Body</a>
+        <li class="nav-item {{ 'active' if active_page == 'heart' else '' }}">
+        <a class="nav-link" href="/heart">Heart</a>
+      </li>
+        </li>
+        <li class="nav-item {{ 'active' if active_page == 'sleep' else '' }}">
+        <a class="nav-link" href="/sleep">Sleep</a>
       </li>
 
 

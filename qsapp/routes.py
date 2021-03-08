@@ -2,6 +2,7 @@ from flask import request, redirect, session, url_for, render_template
 from flask import current_app as app
 import requests
 import os
+import datetime
 from requests_oauthlib import OAuth2Session
 import logging.config
 
@@ -28,27 +29,41 @@ WBS_API_URL = app.config["WBS_API_URL"]
 def index():
     # Check what is the last row in DB and ask Withings API for call
     logger.debug("Start loading - Index page")
-    last_in_db = Body.load_df().date.max()
-    print(last_in_db)
+    last_in_db = Body.get_last_date()
     data = withings_daily_summary(str(last_in_db))
-    # If Withings API returns data return success status and automaticaly start uploading newest data to DB
+
+    # If Withings API returns data return success status
     if isinstance(data, list):
         last_in_API = data[-1]['date']
-        status = f"Last record in API: {last_in_API}"
+        last_in_API = datetime.datetime.strptime(last_in_API, "%Y-%m-%d")
+        status = datetime.datetime.strftime(last_in_API, "%Y-%m-%d")
         icon = "green"
-        Body.body_insert(str(last_in_db))
-        last_in_db = Body.load_df().date.max()
-    # If Withing API token is invalid return Error message
+        # If outdated data, insert them in DB
+        if last_in_API > last_in_db:
+            Body.body_insert(str(last_in_db))
+
+    # If Withings API token is invalid return Error message
     else:
         status = data
         icon = ""
+    last_in_db = datetime.datetime.strftime(last_in_db, "%Y-%m-%d") # Format to date
     return render_template("index.html", status=status, icon=icon, last_in_db=last_in_db)
 
 
-@app.route("/body")
-def body():
-    logger.debug("Start loading - Body page")
-    return render_template("body.html")
+@app.route("/fitness")
+def fitness():
+    logger.debug("Start loading - Fitness page")
+    return render_template("fitness.html")
+
+@app.route("/heart")
+def heart():
+    logger.debug("Start loading - Heart page")
+    return render_template("heart.html")
+
+@app.route("/sleep")
+def sleep():
+    logger.debug("Start loading - Sleep page")
+    return render_template("sleep.html")
 
 
 @app.route('/oura_login')
